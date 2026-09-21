@@ -1,0 +1,40 @@
+name: DLB Results Sync
+
+on:
+  schedule:
+    # Cron uses UTC. DLB draws are at 9:00 PM Sri Lanka time (15:30 UTC).
+    # This runs every 5 minutes from 15:00 to 18:55 UTC (8:30 PM - 12:25 AM Sri Lanka).
+    # For 24/7 use:  "*/5 * * * *"
+    - cron: "*/5 15-18 * * *"
+  workflow_dispatch:      # lets you run it manually from the Actions tab
+
+# never run two syncs at the same time
+concurrency:
+  group: dlb-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Sync DLB results to Firestore
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: python dlb_sync.py

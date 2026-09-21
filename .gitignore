@@ -1,0 +1,9 @@
+# NEVER commit credentials
+serviceAccountKey.json
+*serviceAccount*.json
+.env
+
+__pycache__/
+*.pyc
+dlb_results_*.json
+second_chance_images/
